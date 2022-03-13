@@ -4,6 +4,8 @@ pragma solidity ^0.8.0;
 import "./Interfaces/ITokenTransferProxy.sol";
 import "./Interfaces/IAugustusSwapper.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+import "@uniswap/v3-core/contracts/libraries/LowGasSafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract SwapperV2 {
 
@@ -11,6 +13,8 @@ contract SwapperV2 {
     IAugustusSwapper private augustusSwapper;
     address owner;
     bool internal initV2;
+
+    using LowGasSafeMath for uint256;
 
 //Modifiers
 
@@ -56,19 +60,21 @@ contract SwapperV2 {
 
         uint amountIn;
         uint[] memory amountOut = new uint[](_porcentageForSwap.length);
-        uint totalAmountForSwap = msg.value - (msg.value/100);
-        payable(owner).transfer(msg.value - totalAmountForSwap);
+        uint totalAmountForSwap = msg.value.sub(msg.value/100);
+        payable(owner).transfer(msg.value.sub(totalAmountForSwap));
 
         for(uint i = 0; i < _porcentageForSwap.length; i++){
-            amountIn = (totalAmountForSwap*_porcentageForSwap[i])/100;
+            amountIn = totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             (bool pass, bytes memory result) = address(augustusSwapper).call{ value: amountIn }(_encodeDate[i]);
             if(pass){
                 amountOut[i] = abi.decode(result, (uint));
             }
         }
 
-        (bool success,) = msg.sender.call{ value: address(this).balance }("");
-        require(success, "refund failed");
+        if(address(this).balance > 0){
+            (bool success,) = msg.sender.call{ value: address(this).balance }("");
+            require(success, "refund failed");
+        }
 
         return amountOut;
     }
@@ -82,25 +88,32 @@ contract SwapperV2 {
         public
         comfirmPorcentages(_porcentageForSwap)
         comfirmTokenAddressOut(_tokenForSawapOut) 
-        returns(uint[] memory){
+        returns(uint[] memory amountOut){
 
         require(_tokenForSawapIn != 0x0000000000000000000000000000000000000000, "Zero addres");
         require(_tokenForSawapOut.length == _porcentageForSwap.length && _encodeDate.length == _porcentageForSwap.length);
         uint amountIn;
-        uint[] memory amountOut = new uint[](_tokenForSawapOut.length);
+        amountOut = new uint[](_tokenForSawapOut.length);
 
         tokenTransferProxy.transferFrom(_tokenForSawapIn, msg.sender, address(this), _amountForSwap);
-        uint _totalAmountForSwap = _amountForSwap - (_amountForSwap/100);
-        uint _totalAmountForOwner = _amountForSwap - _totalAmountForSwap;
+        uint _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/100);
+        uint _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
         tokenTransferProxy.transferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
         TransferHelper.safeApprove(_tokenForSawapIn, address(tokenTransferProxy), _totalAmountForSwap);
 
         for(uint i = 0; i < _tokenForSawapOut.length; i++){
-            amountIn = (_totalAmountForSwap*_porcentageForSwap[i])/100;
+            amountIn = _totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             (bool pass, bytes memory result) = address(augustusSwapper).call(_encodeDate[i]);
+            
             if(pass){
                 amountOut[i] = abi.decode(result, (uint));
+                tokenTransferProxy.transferFrom(_tokenForSawapOut[i], address(this), msg.sender, amountOut[i]);
             }
+        }
+
+        uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
+        if(balance > 0){
+            TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), msg.sender, balance);
         }
 
         return amountOut;

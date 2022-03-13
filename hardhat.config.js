@@ -36,7 +36,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     hardhat: {
       forking: {
         url: process.env.MAINNET_URL,
-        blockNumber: 14316371
+        blockNumber: 14379882
       }
     }
   },
