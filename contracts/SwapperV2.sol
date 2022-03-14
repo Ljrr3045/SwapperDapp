@@ -60,7 +60,7 @@ contract SwapperV2 {
 
         uint amountIn;
         uint[] memory amountOut = new uint[](_porcentageForSwap.length);
-        uint totalAmountForSwap = msg.value.sub(msg.value/100);
+        uint totalAmountForSwap = msg.value.sub(msg.value/1000);
         payable(owner).transfer(msg.value.sub(totalAmountForSwap));
 
         for(uint i = 0; i < _porcentageForSwap.length; i++){
@@ -96,7 +96,7 @@ contract SwapperV2 {
         amountOut = new uint[](_tokenForSawapOut.length);
 
         tokenTransferProxy.transferFrom(_tokenForSawapIn, msg.sender, address(this), _amountForSwap);
-        uint _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/100);
+        uint _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
         uint _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
         tokenTransferProxy.transferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
         TransferHelper.safeApprove(_tokenForSawapIn, address(tokenTransferProxy), _totalAmountForSwap);

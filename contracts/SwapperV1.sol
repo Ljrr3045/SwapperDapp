@@ -55,29 +55,29 @@ contract SwapperV1{
         payable
         comfirmPorcentages(_porcentageForSwap)
         comfirmTokenAddressOut(_tokenForSawap)
-        returns(uint[] memory amountOut)
+        
         {
 
-        require(msg.value > 0);
-        require(_tokenForSawap.length == _porcentageForSwap.length);
+        require(msg.value > 0, "Need send ETH");
+        require(
+            _tokenForSawap.length == _porcentageForSwap.length, 
+            "The number of changes must be equal to the number of percentages"
+        );
 
         uint amountIn;
-        amountOut = new uint[](_tokenForSawap.length);
-        uint totalAmountForSwap = msg.value.sub(msg.value/100);
+        uint totalAmountForSwap = msg.value.sub(msg.value/1000);
 
         payable(owner).transfer(msg.value.sub(totalAmountForSwap));
 
         for(uint i = 0; i < _tokenForSawap.length; i++){
             amountIn = totalAmountForSwap.mul(_porcentageForSwap[i])/100;
-            amountOut[i] = _swapEthForToken(_tokenForSawap[i], amountIn);
+            _swapEthForToken(_tokenForSawap[i], amountIn);
         }
 
         if(address(this).balance > 0){
             (bool success,) = msg.sender.call{ value: address(this).balance }("");
             require(success, "refund failed");
         }
-        
-        return amountOut;
     }
 
     function swapTokenForToken(
@@ -88,23 +88,25 @@ contract SwapperV1{
         public
         comfirmPorcentages(_porcentageForSwap)
         comfirmTokenAddressOut(_tokenForSawapOut)
-        returns(uint[] memory amountOut)
         {
-
-        require(_tokenForSawapOut.length == _porcentageForSwap.length);
+        require(_amountForSwap > 0);
+        require(_tokenForSawapIn != 0x0000000000000000000000000000000000000000, "Is a zero addres");
+        require(
+            _tokenForSawapOut.length == _porcentageForSwap.length, 
+            "The number of changes must be equal to the number of percentages"
+        );
 
         uint amountIn;
-        amountOut = new uint[](_tokenForSawapOut.length);
 
         TransferHelper.safeTransferFrom(_tokenForSawapIn, msg.sender, address(this), _amountForSwap);
-        uint _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/100);
+        uint _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
         uint _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
         TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
         TransferHelper.safeApprove(_tokenForSawapIn, address(swapRouter), _totalAmountForSwap);
 
         for(uint i = 0; i < _tokenForSawapOut.length; i++){
             amountIn = _totalAmountForSwap.mul(_porcentageForSwap[i])/100;
-            amountOut[i] = _swapTokenForToken(_tokenForSawapIn, _tokenForSawapOut[i], amountIn);
+            _swapTokenForToken(_tokenForSawapIn, _tokenForSawapOut[i], amountIn);
         }
 
         uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
@@ -112,15 +114,12 @@ contract SwapperV1{
         if(balance > 0){
             TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), msg.sender, balance);
         }
-        
-        return amountOut;
     }
 
 //Private Functions
 
-    function _swapEthForToken(address _tokenForSawap, uint amountIn) private returns(uint){
+    function _swapEthForToken(address _tokenForSawap, uint amountIn) private{
 
-        uint amountOut;
         uint24 poolFee = 3000;
 
         ISwapRouter.ExactInputSingleParams memory params =
@@ -136,16 +135,13 @@ contract SwapperV1{
             }
         );
 
-        amountOut = swapRouter.exactInputSingle{ value: amountIn }(params);
+        swapRouter.exactInputSingle{ value: amountIn }(params);
         peripheryPayments.refundETH();
-        return amountOut;
     }
 
-    function _swapTokenForToken(address _tokenForSawapIn, address _tokenForSawapOut, uint amountIn) private returns(uint) {
+    function _swapTokenForToken(address _tokenForSawapIn, address _tokenForSawapOut, uint amountIn) private {
 
-        uint amountOut;
         uint24 poolFee = 3000;
-
 
         ISwapRouter.ExactInputSingleParams memory params =
             ISwapRouter.ExactInputSingleParams({
@@ -160,7 +156,6 @@ contract SwapperV1{
             }
         );
 
-        amountOut = swapRouter.exactInputSingle(params);
-        return amountOut;
+        swapRouter.exactInputSingle(params);
     }
 }
