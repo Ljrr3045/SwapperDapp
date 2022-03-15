@@ -54,9 +54,7 @@ contract SwapperV1{
         public 
         payable
         comfirmPorcentages(_porcentageForSwap)
-        comfirmTokenAddressOut(_tokenForSawap)
-        
-        {
+        comfirmTokenAddressOut(_tokenForSawap){
 
         require(msg.value > 0, "Need send ETH");
         require(
@@ -65,16 +63,19 @@ contract SwapperV1{
         );
 
         uint amountIn;
-        uint totalAmountForSwap = msg.value.sub(msg.value/1000);
+        uint totalAmountForSwap;
 
+        totalAmountForSwap = msg.value.sub(msg.value/1000);
         payable(owner).transfer(msg.value.sub(totalAmountForSwap));
 
         for(uint i = 0; i < _tokenForSawap.length; i++){
+
             amountIn = totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             _swapEthForToken(_tokenForSawap[i], amountIn);
         }
 
         if(address(this).balance > 0){
+            
             (bool success,) = msg.sender.call{ value: address(this).balance }("");
             require(success, "refund failed");
         }
@@ -87,8 +88,8 @@ contract SwapperV1{
         uint[] memory _porcentageForSwap) 
         public
         comfirmPorcentages(_porcentageForSwap)
-        comfirmTokenAddressOut(_tokenForSawapOut)
-        {
+        comfirmTokenAddressOut(_tokenForSawapOut){
+
         require(_amountForSwap > 0);
         require(_tokenForSawapIn != 0x0000000000000000000000000000000000000000, "Is a zero addres");
         require(
@@ -97,20 +98,22 @@ contract SwapperV1{
         );
 
         uint amountIn;
+        uint _totalAmountForSwap;
+        uint _totalAmountForOwner;
 
         TransferHelper.safeTransferFrom(_tokenForSawapIn, msg.sender, address(this), _amountForSwap);
-        uint _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
-        uint _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
+        _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
+        _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
         TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
         TransferHelper.safeApprove(_tokenForSawapIn, address(swapRouter), _totalAmountForSwap);
 
         for(uint i = 0; i < _tokenForSawapOut.length; i++){
+
             amountIn = _totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             _swapTokenForToken(_tokenForSawapIn, _tokenForSawapOut[i], amountIn);
         }
 
         uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
-
         if(balance > 0){
             TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), msg.sender, balance);
         }

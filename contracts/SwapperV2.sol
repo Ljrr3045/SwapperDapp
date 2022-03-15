@@ -55,15 +55,21 @@ contract SwapperV2 {
         comfirmPorcentages(_porcentageForSwap)
         returns(uint[] memory){
 
-        require(msg.value > 0);
-        require(_encodeDate.length == _porcentageForSwap.length);
+        require(msg.value > 0, "Need send ETH");
+        require(
+            _encodeDate.length == _porcentageForSwap.length, 
+            "The number of changes must be equal to the number of percentages"
+        );
 
         uint amountIn;
+        uint totalAmountForSwap;
         uint[] memory amountOut = new uint[](_porcentageForSwap.length);
-        uint totalAmountForSwap = msg.value.sub(msg.value/1000);
+
+        totalAmountForSwap = msg.value.sub(msg.value/1000);
         payable(owner).transfer(msg.value.sub(totalAmountForSwap));
 
         for(uint i = 0; i < _porcentageForSwap.length; i++){
+
             amountIn = totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             (bool pass, bytes memory result) = address(augustusSwapper).call{ value: amountIn }(_encodeDate[i]);
             if(pass){
@@ -72,6 +78,7 @@ contract SwapperV2 {
         }
 
         if(address(this).balance > 0){
+
             (bool success,) = msg.sender.call{ value: address(this).balance }("");
             require(success, "refund failed");
         }
@@ -79,43 +86,50 @@ contract SwapperV2 {
         return amountOut;
     }
 
-    function swapperTokens(
-        address _tokenForSawapIn, 
-        uint _amountForSwap, 
-        address[] memory _tokenForSawapOut, 
-        uint[] memory _porcentageForSwap, 
-        bytes[] memory _encodeDate) 
-        public
-        comfirmPorcentages(_porcentageForSwap)
-        comfirmTokenAddressOut(_tokenForSawapOut) 
-        returns(uint[] memory amountOut){
+    // function swapperTokens(
+    //     address _tokenForSawapIn, 
+    //     uint _amountForSwap, 
+    //     address[] memory _tokenForSawapOut, 
+    //     uint[] memory _porcentageForSwap, 
+    //     bytes[] memory _encodeDate) 
+    //     public
+    //     comfirmPorcentages(_porcentageForSwap)
+    //     comfirmTokenAddressOut(_tokenForSawapOut) 
+    //     returns(uint[] memory amountOut){
 
-        require(_tokenForSawapIn != 0x0000000000000000000000000000000000000000, "Zero addres");
-        require(_tokenForSawapOut.length == _porcentageForSwap.length && _encodeDate.length == _porcentageForSwap.length);
-        uint amountIn;
-        amountOut = new uint[](_tokenForSawapOut.length);
+    //     require(_tokenForSawapIn != 0x0000000000000000000000000000000000000000, "Zero addres");
+    //     require(
+    //         _tokenForSawapOut.length == _porcentageForSwap.length && _encodeDate.length == _porcentageForSwap.length, 
+    //         "The number of changes must be equal to the number of percentages"
+    //     );
 
-        tokenTransferProxy.transferFrom(_tokenForSawapIn, msg.sender, address(this), _amountForSwap);
-        uint _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
-        uint _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
-        tokenTransferProxy.transferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
-        TransferHelper.safeApprove(_tokenForSawapIn, address(tokenTransferProxy), _totalAmountForSwap);
+    //     uint amountIn;
+    //     uint _totalAmountForSwap;
+    //     uint _totalAmountForOwner;
+    //     amountOut = new uint[](_tokenForSawapOut.length);
 
-        for(uint i = 0; i < _tokenForSawapOut.length; i++){
-            amountIn = _totalAmountForSwap.mul(_porcentageForSwap[i])/100;
-            (bool pass, bytes memory result) = address(augustusSwapper).call(_encodeDate[i]);
+    //     tokenTransferProxy.transferFrom(_tokenForSawapIn, msg.sender, address(this), _amountForSwap);
+    //     _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
+    //     _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
+    //     tokenTransferProxy.transferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
+    //     TransferHelper.safeApprove(_tokenForSawapIn, address(tokenTransferProxy), _totalAmountForSwap);
+
+    //     for(uint i = 0; i < _tokenForSawapOut.length; i++){
+
+    //         amountIn = _totalAmountForSwap.mul(_porcentageForSwap[i])/100;
+    //         (bool pass, bytes memory result) = address(augustusSwapper).call(_encodeDate[i]);
             
-            if(pass){
-                amountOut[i] = abi.decode(result, (uint));
-                tokenTransferProxy.transferFrom(_tokenForSawapOut[i], address(this), msg.sender, amountOut[i]);
-            }
-        }
+    //         if(pass){
+    //             amountOut[i] = abi.decode(result, (uint));
+    //             tokenTransferProxy.transferFrom(_tokenForSawapOut[i], address(this), msg.sender, amountOut[i]);
+    //         }
+    //     }
 
-        uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
-        if(balance > 0){
-            TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), msg.sender, balance);
-        }
+    //     uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
+    //     if(balance > 0){
+    //         TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), msg.sender, balance);
+    //     }
 
-        return amountOut;
-    }
+    //     return amountOut;
+    // }
 }
