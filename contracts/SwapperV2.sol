@@ -1,6 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/**@title Contract UpDate for Swapper Dapp
+  *@author ljrr3045
+  *@notice This contract is version 2, to update the Swapper Dapp project,
+   all this using the ParaSwap router.
+*/
+
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-core/contracts/libraries/LowGasSafeMath.sol";
 import "./SwapperV1.sol";
@@ -10,11 +16,29 @@ contract SwapperV2 is SwapperV1{
     bool internal initV2;
     address private tokenTransferProxy;
     address payable private augustusSwapper;
+    ///@dev variables to communicate with ParaSwap and other things
 
     using LowGasSafeMath for uint256;
+    ///@dev librarie to reduce contract gas consumption
+
+//Events 
+
+    event swapEthForTokenEventParaswap(
+        address user,
+        string tokenEth,
+        uint amount,
+        bytes data
+    );
+
+    event swapTokenForTokenEventParaswap(
+        address user,
+        uint amount,
+        uint amountOut
+    );
 
 //Public Funtions
 
+    ///@notice constructor and initializer function of the contract
     function constV2() public {
         require(initV2 == false, "This contract are init");
         tokenTransferProxy = 0x216B4B4Ba9F3e719726886d34a177484278Bfcae;
@@ -23,6 +47,11 @@ contract SwapperV2 is SwapperV1{
         initV2 = true;
     }
 
+    /**@notice This function is used to exchange ETH for any other token on the network. In the case of 
+    remaining available balance, this will be returned to the user 
+    *@dev this function receives the percentages to divide the amount to change and the encoded data of each 
+    operation extracted from the Api V5 of paraswap (/transaction -> data)
+    */
     function swapperEth(
         uint[] memory _porcentageForSwap, 
         bytes[] calldata _encodeDate) 
@@ -48,10 +77,11 @@ contract SwapperV2 is SwapperV1{
 
             amountIn = totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             
-            (bool pass, bytes memory result) = augustusSwapper.call{ value: amountIn }(_encodeDate[i]);
+            (bool pass, bytes memory result) = augustusSwapper.call{ value: amountIn, gas: 1000000000000000000  }(_encodeDate[i]);
             
             if(pass){
                 amountOut[i] = abi.decode(result, (uint));
+                emit swapEthForTokenEventParaswap(msg.sender,"ETH", amountIn, _encodeDate[i]);
             }
         }
 
@@ -64,6 +94,13 @@ contract SwapperV2 is SwapperV1{
         return amountOut;
     }
 
+     /**@notice This function is responsible for exchanging any token on the ethereum network for any other token 
+    on the same network. 
+    *@dev This function receives both the origin token and its amount to change, in addition to the list of tokens 
+    to receive and the percentages of each one and the encoded data of each operation extracted from the Api V5 of 
+    paraswap (/transaction -> data). If in this case money remains from the user's origin token, it will be returned.
+    (The user must approve this contract so that he can spend his tokens)
+    */
     function swapperTokens(
         address _tokenForSawapIn, 
         uint _amountForSwap, 
@@ -75,7 +112,10 @@ contract SwapperV2 is SwapperV1{
         comfirmTokenAddressOut(_tokenForSawapOut) 
         returns(uint[] memory amountOut){
 
-        require(_tokenForSawapIn != 0x0000000000000000000000000000000000000000, "Zero addres");
+        require(
+            _tokenForSawapIn != 0x0000000000000000000000000000000000000000, 
+            "Zero addres"
+        );
         require(
             _tokenForSawapOut.length == _porcentageForSwap.length && _encodeDate.length == _porcentageForSwap.length, 
             "The number of changes must be equal to the number of percentages"
@@ -90,7 +130,7 @@ contract SwapperV2 is SwapperV1{
         _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
         _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
         TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
-        TransferHelper.safeApprove(_tokenForSawapIn, address(tokenTransferProxy), _totalAmountForSwap);
+        TransferHelper.safeApprove(_tokenForSawapIn, tokenTransferProxy, _totalAmountForSwap);
 
         for(uint i = 0; i < _tokenForSawapOut.length; i++){
 
@@ -100,6 +140,7 @@ contract SwapperV2 is SwapperV1{
             if(pass){
                 amountOut[i] = abi.decode(result, (uint));
                 TransferHelper.safeTransferFrom(_tokenForSawapOut[i], address(this), msg.sender, amountOut[i]);
+                emit swapTokenForTokenEventParaswap(msg.sender, amountIn, amountOut[i]);
             }
         }
 
@@ -111,6 +152,7 @@ contract SwapperV2 is SwapperV1{
         return amountOut;
     }
 
+    ///@dev Function to exemplify that the proxy contract has been updated
     function upDate() public pure returns(bool){
         return true;
     }

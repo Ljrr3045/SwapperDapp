@@ -1,6 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/**@title Contract for a Swapper Dapp
+  *@author ljrr3045
+  *@notice This contract is responsible for performing various token swaps, either from 
+  ETH to a Token or from Token by Token, all this using the UniSwap router
+*/
+
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/IPeripheryPayments.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
@@ -11,13 +17,33 @@ contract SwapperV1{
 
     ISwapRouter internal swapRouter;
     IPeripheryPayments internal peripheryPayments;
-    address owner;
+    address internal owner;
     bool internal init;
+    ///@dev variables to communicate with Uniswap and other things
 
     using LowGasSafeMath for uint256;
+    ///@dev librarie to reduce contract gas consumption
+
+//Events
+
+    event swapEthForTokenEvent(
+        address user,
+        string tokenEth,
+        uint amount,
+        address tokenOut
+    );
+
+    event swapTokenForTokenEvent(
+        address user,
+        address tokenIn,
+        uint amount,
+        address tokenOut
+    );
 
 //Modifiers
 
+    /**@dev modifier that is responsible for confirming that the given percentages add up to 100% in order 
+    to divide the amount correctly */
     modifier comfirmPorcentages(uint[] memory _porcentageForSwap){
         uint porcentage;
 
@@ -29,6 +55,7 @@ contract SwapperV1{
         _;
     }
 
+    ///@dev modifier that is responsible for confirming that the addresses of the tokens to receive are valid
     modifier comfirmTokenAddressOut(address[] memory _tokenForSawap){
         address zeroAddress = 0x0000000000000000000000000000000000000000;
 
@@ -40,6 +67,7 @@ contract SwapperV1{
 
 //Public Funtions
 
+    ///@notice constructor and initializer function of the contract
     function conts() public virtual{
         require(init == false, "This contract are init");
         swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
@@ -48,6 +76,10 @@ contract SwapperV1{
         init = true;
     }
 
+    /**@notice This function is used to exchange ETH for any other token on the network. In the case of 
+    remaining available balance, this will be returned to the user 
+    *@dev this function receives the percentages to divide the amount to change and the desired list of tokens
+    */
     function swapEthForToken(
         address[] memory _tokenForSawap, 
         uint[] memory _porcentageForSwap) 
@@ -72,6 +104,8 @@ contract SwapperV1{
 
             amountIn = totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             _swapEthForToken(_tokenForSawap[i], amountIn);
+
+            emit swapEthForTokenEvent(msg.sender,"ETH", amountIn, _tokenForSawap[i]);
         }
 
         if(address(this).balance > 0){
@@ -81,9 +115,14 @@ contract SwapperV1{
         }
     }
 
+    /**@notice This function is responsible for exchanging any token on the ethereum network for any other token 
+    on the same network. 
+    *@dev This function receives both the origin token and its amount to change, in addition to the list of tokens 
+    to receive and the percentages of each one. If in this case money remains from the user's origin token, it will be returned.
+    */
     function swapTokenForToken(
-        address _tokenForSawapIn ,
-        uint _amountForSwap ,
+        address _tokenForSawapIn,
+        uint _amountForSwap,
         address[] memory _tokenForSawapOut, 
         uint[] memory _porcentageForSwap) 
         public
@@ -91,7 +130,10 @@ contract SwapperV1{
         comfirmTokenAddressOut(_tokenForSawapOut){
 
         require(_amountForSwap > 0);
-        require(_tokenForSawapIn != 0x0000000000000000000000000000000000000000, "Is a zero addres");
+        require(
+            _tokenForSawapIn != 0x0000000000000000000000000000000000000000, 
+            "Is a zero addres"
+        );
         require(
             _tokenForSawapOut.length == _porcentageForSwap.length, 
             "The number of changes must be equal to the number of percentages"
@@ -111,6 +153,8 @@ contract SwapperV1{
 
             amountIn = _totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             _swapTokenForToken(_tokenForSawapIn, _tokenForSawapOut[i], amountIn);
+
+            emit swapTokenForTokenEvent(msg.sender, _tokenForSawapIn, amountIn, _tokenForSawapOut[i]);
         }
 
         uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
@@ -121,6 +165,7 @@ contract SwapperV1{
 
 //Private Functions
 
+    ///@dev Private function that establishes contact with the Uniswap Router to make the change, all this with ETH.
     function _swapEthForToken(address _tokenForSawap, uint amountIn) private{
 
         uint24 poolFee = 3000;
@@ -142,6 +187,7 @@ contract SwapperV1{
         peripheryPayments.refundETH();
     }
 
+    ///@dev Private function that establishes contact with the Uniswap Router to make the change, token for token.
     function _swapTokenForToken(address _tokenForSawapIn, address _tokenForSawapOut, uint amountIn) private {
 
         uint24 poolFee = 3000;

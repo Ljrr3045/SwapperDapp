@@ -21,5 +21,13 @@
     "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "@uniswap/v3-core": "^1.0.1",
     "paraswap": "^5.1.0"
+  },
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "coverage": "npx hardhat coverage",
+    "scriptDeployProxy": "npx hardhat run --network hardhat scripts/SwapperDeploy-script.js",
+    "scriptUpdate": "npx hardhat run --network hardhat scripts/SwapperUpDate-script.js",
+    "deploy": "npx hardhat --network hardhat deploy"
   }
 }
