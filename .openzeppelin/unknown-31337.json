@@ -1,0 +1,237 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0xde2Bd2ffEA002b8E84ADeA96e5976aF664115E2c",
+    "txHash": "0x6c575b2cc101581353185676cec055b56335ad310ce0bff8850eada5cb9f4e48"
+  },
+  "proxies": [
+    {
+      "address": "0x4bf010f1b9beDA5450a8dD702ED602A104ff65EE",
+      "txHash": "0xed0ed6af8d189484d581dc22c2c6c6a9b7bc9e691de147ea531f3c5b62bfec7a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xefc1aB2475ACb7E60499Efb171D173be19928a05",
+      "txHash": "0x113cc2e68bfd3009192bb458fa17b6ec0554b47ac08145e1cdec11702eb64e14",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "188d9a4956fc80a3dd835ca873392ee377ff0c394e8d88bff3572d80c65ab3ae": {
+      "address": "0x5302E909d1e93e30F05B5D6Eea766363D14F9892",
+      "txHash": "0x0d3040e8ed126c6d7b762190637069047c65398835c6a746096ea9352f493753",
+      "layout": {
+        "storage": [
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(ISwapRouter)347",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:12"
+          },
+          {
+            "label": "peripheryPayments",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IPeripheryPayments)247",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:13"
+          },
+          {
+            "label": "owner",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:14"
+          },
+          {
+            "label": "init",
+            "offset": 20,
+            "slot": "2",
+            "type": "t_bool",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:15"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(IPeripheryPayments)247": {
+            "label": "contract IPeripheryPayments"
+          },
+          "t_contract(ISwapRouter)347": {
+            "label": "contract ISwapRouter"
+          }
+        }
+      }
+    },
+    "ba4bdaf512350b454231c34d3e6d04fdae6fbb5382f8a26d5a4492b0f5c261c2": {
+      "address": "0x40a42Baf86Fc821f972Ad2aC878729063CeEF403",
+      "txHash": "0xd45affc8a6d60202d73aa92ec834dfc6379528d9e8dc2595ee509341cd414a08",
+      "layout": {
+        "storage": [
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(ISwapRouter)347",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:12"
+          },
+          {
+            "label": "peripheryPayments",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IPeripheryPayments)247",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:13"
+          },
+          {
+            "label": "owner",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:14"
+          },
+          {
+            "label": "init",
+            "offset": 20,
+            "slot": "2",
+            "type": "t_bool",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:15"
+          },
+          {
+            "label": "initV2",
+            "offset": 21,
+            "slot": "2",
+            "type": "t_bool",
+            "contract": "SwapperV2",
+            "src": "contracts\\SwapperV2.sol:10"
+          },
+          {
+            "label": "tokenTransferProxy",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "SwapperV2",
+            "src": "contracts\\SwapperV2.sol:11"
+          },
+          {
+            "label": "augustusSwapper",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address_payable",
+            "contract": "SwapperV2",
+            "src": "contracts\\SwapperV2.sol:12"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(IPeripheryPayments)247": {
+            "label": "contract IPeripheryPayments"
+          },
+          "t_contract(ISwapRouter)347": {
+            "label": "contract ISwapRouter"
+          }
+        }
+      }
+    },
+    "120a795318af44c566cad72455eeb25389c9cffa7808f756d838b5d177095bc7": {
+      "address": "0x870526b7973b56163a6997bB7C886F5E4EA53638",
+      "txHash": "0x25bbe011aea6507475f2e87840f03987b3cec0520b2b60c329fc47c3f1935609",
+      "layout": {
+        "storage": [
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(ISwapRouter)347",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:12"
+          },
+          {
+            "label": "peripheryPayments",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IPeripheryPayments)247",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:13"
+          },
+          {
+            "label": "owner",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:14"
+          },
+          {
+            "label": "init",
+            "offset": 20,
+            "slot": "2",
+            "type": "t_bool",
+            "contract": "SwapperV1",
+            "src": "contracts\\SwapperV1.sol:15"
+          },
+          {
+            "label": "initV2",
+            "offset": 21,
+            "slot": "2",
+            "type": "t_bool",
+            "contract": "SwapperV2",
+            "src": "contracts\\SwapperV2.sol:10"
+          },
+          {
+            "label": "tokenTransferProxy",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "SwapperV2",
+            "src": "contracts\\SwapperV2.sol:11"
+          },
+          {
+            "label": "augustusSwapper",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address_payable",
+            "contract": "SwapperV2",
+            "src": "contracts\\SwapperV2.sol:12"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(IPeripheryPayments)247": {
+            "label": "contract IPeripheryPayments"
+          },
+          "t_contract(ISwapRouter)347": {
+            "label": "contract ISwapRouter"
+          }
+        }
+      }
+    }
+  }
+}
