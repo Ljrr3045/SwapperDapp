@@ -7,9 +7,9 @@ pragma solidity ^0.8.0;
   ETH to a Token or from Token by Token, all this using the UniSwap router
 */
 
+import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/IPeripheryPayments.sol";
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-core/contracts/libraries/LowGasSafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -159,7 +159,7 @@ contract SwapperV1{
 
         uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
         if(balance > 0){
-            TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), msg.sender, balance);
+            IERC20(_tokenForSawapIn).transfer(msg.sender, balance);
         }
     }
 

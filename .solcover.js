@@ -1,3 +1,3 @@
 module.exports = {
-    skipFiles: ['SwapperV2']
+    skipFiles: []
   };

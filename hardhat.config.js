@@ -35,8 +35,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.MAINNET_URL,
-        blockNumber: 14379882
+        url: process.env.MAINNET_URL, //For test in Polygon: process.env.POLY_MAINNET
+        blockNumber: 14379882, //For test in Polygon: 26086048
       }
     }
   },

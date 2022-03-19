@@ -7,8 +7,8 @@ pragma solidity ^0.8.0;
    all this using the ParaSwap router.
 */
 
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "@uniswap/v3-core/contracts/libraries/LowGasSafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./SwapperV1.sol";
 
 contract SwapperV2 is SwapperV1{
@@ -53,7 +53,8 @@ contract SwapperV2 is SwapperV1{
     operation extracted from the Api V5 of paraswap (/transaction -> data)
     */
     function swapperEth(
-        uint[] memory _porcentageForSwap, 
+        uint[] calldata _porcentageForSwap,
+        address[] calldata _tokenForSawapOut, 
         bytes[] calldata _encodeDate) 
         public
         payable
@@ -62,7 +63,7 @@ contract SwapperV2 is SwapperV1{
 
         require(msg.value > 0, "Need send ETH");
         require(
-            _encodeDate.length == _porcentageForSwap.length, 
+            _encodeDate.length == _porcentageForSwap.length && _porcentageForSwap.length == _tokenForSawapOut.length, 
             "The number of changes must be equal to the number of percentages"
         );
 
@@ -77,10 +78,20 @@ contract SwapperV2 is SwapperV1{
 
             amountIn = totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             
-            (bool pass, bytes memory result) = augustusSwapper.call{ value: amountIn, gas: 1000000000000000000  }(_encodeDate[i]);
+            (bool pass, bytes memory result) = augustusSwapper.call{ value: amountIn }(_encodeDate[i]);
+
+            if (!pass) {
+				// Next 5 lines from https://ethereum.stackexchange.com/a/83577
+				if (result.length < 68) revert();
+				assembly {
+					result := add(result, 0x04)
+				}
+				revert(abi.decode(result, (string)));
+			}
             
             if(pass){
                 amountOut[i] = abi.decode(result, (uint));
+                IERC20(_tokenForSawapOut[i]).transfer(msg.sender, amountOut[i]/10);
                 emit swapEthForTokenEventParaswap(msg.sender,"ETH", amountIn, _encodeDate[i]);
             }
         }
@@ -126,27 +137,36 @@ contract SwapperV2 is SwapperV1{
         uint _totalAmountForOwner;
         amountOut = new uint[](_tokenForSawapOut.length);
 
-        TransferHelper.safeTransferFrom(_tokenForSawapIn, msg.sender, address(this), _amountForSwap);
+        IERC20(_tokenForSawapIn).transferFrom(msg.sender, address(this), _amountForSwap);
         _totalAmountForSwap = _amountForSwap.sub(_amountForSwap/1000);
         _totalAmountForOwner = _amountForSwap.sub(_totalAmountForSwap);
-        TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), owner, _totalAmountForOwner);
-        TransferHelper.safeApprove(_tokenForSawapIn, tokenTransferProxy, _totalAmountForSwap);
+        IERC20(_tokenForSawapIn).transfer(owner, _totalAmountForOwner);
+        IERC20(_tokenForSawapIn).approve(tokenTransferProxy, _totalAmountForSwap);
 
         for(uint i = 0; i < _tokenForSawapOut.length; i++){
 
             amountIn = _totalAmountForSwap.mul(_porcentageForSwap[i])/100;
             (bool pass, bytes memory result) = augustusSwapper.call(_encodeDate[i]);
+
+            if (!pass) {
+				// Next 5 lines from https://ethereum.stackexchange.com/a/83577
+				if (result.length < 68) revert();
+				assembly {
+					result := add(result, 0x04)
+				}
+				revert(abi.decode(result, (string)));
+			}
             
             if(pass){
                 amountOut[i] = abi.decode(result, (uint));
-                TransferHelper.safeTransferFrom(_tokenForSawapOut[i], address(this), msg.sender, amountOut[i]);
+                IERC20(_tokenForSawapOut[i]).transfer(msg.sender, amountOut[i]/10);
                 emit swapTokenForTokenEventParaswap(msg.sender, amountIn, amountOut[i]);
             }
         }
 
         uint balance = IERC20(_tokenForSawapIn).balanceOf(address(this));
         if(balance > 0){
-            TransferHelper.safeTransferFrom(_tokenForSawapIn, address(this), msg.sender, balance);
+            IERC20(_tokenForSawapIn).transfer(msg.sender, balance);
         }
 
         return amountOut;
