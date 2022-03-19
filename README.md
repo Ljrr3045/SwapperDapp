@@ -30,6 +30,8 @@ networks: {
   }
 <br>
 
+And unlock the contract test:<br>
+
 xdescribe("SwapperV2_Poly",   ---->   describe("SwapperV2_Poly",<br>
 
 *Note 2:<br>
