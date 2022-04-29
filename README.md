@@ -1,9 +1,14 @@
 # Swapper Dapp
+
+System to exchange currencies with multiple exchanges in solidity
 ------------------------------------------------
-*Note 1: <br>
+# Notes
 
-- To test Swapper V1 make sure you are on the Ethereum network and configure your hardhat.config to: <br>
+- Note 1:<br>
 
+.- To test Swapper V1 make sure you are on the Ethereum network and configure your hardhat.config to: <br>
+
+```shell
 networks: {
     hardhat: {
       forking: {
@@ -12,14 +17,15 @@ networks: {
       }
     }
   },
-<br>
+```
 
 And unlock the contract test:<br>
 
-xdescribe("SwapperV1",   ---->   describe("SwapperV1",<br>
+xdescribe("SwapperV1"   ---->   describe("SwapperV1"<br>
 
-- To test Swapper V2 make sure you are on the Polygon network and set your hardhat.config to: <br>
+.- To test Swapper V2 make sure you are on the Polygon network and set your hardhat.config to: <br>
 
+```shell
 networks: {
     hardhat: {
       forking: {
@@ -28,13 +34,13 @@ networks: {
       }
     }
   }
-<br>
+```
 
 And unlock the contract test:<br>
 
-xdescribe("SwapperV2_Poly",   ---->   describe("SwapperV2_Poly",<br>
+xdescribe("SwapperV2_Poly"   ---->   describe("SwapperV2_Poly"<br>
 
-*Note 2:<br>
+- Note 2:<br>
 
 If your Swapper version 2 test has problems matching the test results, please try again as this is due to communication with the API. The test data is correct.
 ------------------------------------------------
